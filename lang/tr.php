@@ -31,6 +31,7 @@ return [
     'error_invalid_type' => 'Geçersiz sorgu tipi',
     'error_loading' => 'Yükleme hatası',
     'error_query_failed' => 'sorgusu başarısız',
+    'error_command_not_found' => 'komutu bulunamadı!',
 
     // Dil Seçimi
     'language' => 'Dil',

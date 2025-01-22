@@ -31,6 +31,7 @@ return [
     'error_invalid_type' => 'Invalid query type',
     'error_loading' => 'Loading error',
     'error_query_failed' => 'query failed',
+    'error_command_not_found' => 'command not found!',
 
     // Language Selection
     'language' => 'Language',
