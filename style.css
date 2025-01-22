@@ -115,6 +115,61 @@ body {
   z-index: 1000;
 }
 
+.loading-placeholder {
+  padding: 15px;
+  background: linear-gradient(
+    90deg,
+    rgba(227, 227, 227, 0.5) 0%,
+    rgba(235, 235, 235, 0.8) 50%,
+    rgba(227, 227, 227, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: loading-wave 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+@keyframes loading-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.dns-item {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fade-in 0.3s ease forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dns-results:not(:empty) {
+  animation: fade-slide-in 0.4s ease-out forwards;
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .loading-content {
   position: absolute;
   top: 50%;

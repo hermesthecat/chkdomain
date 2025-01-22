@@ -33,27 +33,45 @@
 
                 <div id="nofilterDNS" class="dns-group">
                     <h4><i class="fas fa-globe"></i> Normal DNS Sunucuları</h4>
-                    <div class="dns-results"></div>
+                    <div class="dns-results">
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                    </div>
                 </div>
 
                 <div id="secureDNS" class="dns-group">
                     <h4><i class="fas fa-shield-alt"></i> Güvenli DNS Sunucuları</h4>
-                    <div class="dns-results"></div>
+                    <div class="dns-results">
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                    </div>
                 </div>
 
                 <div id="adblockDNS" class="dns-group">
                     <h4><i class="fas fa-ban"></i> Reklam Engelleyici DNS Sunucuları</h4>
-                    <div class="dns-results"></div>
+                    <div class="dns-results">
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                    </div>
                 </div>
 
                 <div id="defaultDNS" class="dns-group">
                     <h4><i class="fas fa-home"></i> Varsayılan DNS Sunucusu</h4>
-                    <div class="dns-results"></div>
+                    <div class="dns-results">
+                        <div class="loading-placeholder"></div>
+                    </div>
                 </div>
 
                 <div id="intelLinks" class="dns-group">
                     <h4><i class="fas fa-info-circle"></i> Domain Güvenlik Bilgileri</h4>
-                    <div class="intel-links"></div>
+                    <div class="intel-links">
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                        <div class="loading-placeholder"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -70,7 +88,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="scr.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

@@ -7,9 +7,15 @@
 
 header('Content-Type: application/json');
 
-if (!isset($_POST['domain'])) {
+if (!isset($_POST['domain']) || !isset($_POST['type'])) {
     http_response_code(400);
-    die(json_encode(['error' => 'Domain parametresi gerekli']));
+    die(json_encode(['error' => 'Domain ve sorgu tipi parametreleri gerekli']));
+}
+
+$validTypes = ['nofilterDNS', 'secureDNS', 'adblockDNS', 'defaultDNS', 'intelLinks', 'all'];
+if (!in_array($_POST['type'], $validTypes)) {
+    http_response_code(400);
+    die(json_encode(['error' => 'Geçersiz sorgu tipi']));
 }
 
 require_once 'chkdm.php';
@@ -145,14 +151,36 @@ try {
     $checker = new DomainChecker($domain);
 
     // DNS kontrolleri
-    $checker->checkDNSGroup('nofilterDNS', $nofilterDNS);
-    $checker->checkDNSGroup('secureDNS', $secureDNS);
-    $checker->checkDNSGroup('adblockDNS', $adblockDNS);
-    $checker->checkDefaultDNS();
-    $checker->checkCustomDNS();
-    $checker->getIntelLinks();
+    $type = $_POST['type'];
 
-    echo json_encode($checker->getResults());
+    if ($type === 'all') {
+        $checker->checkDNSGroup('nofilterDNS', $nofilterDNS);
+        $checker->checkDNSGroup('secureDNS', $secureDNS);
+        $checker->checkDNSGroup('adblockDNS', $adblockDNS);
+        $checker->checkDefaultDNS();
+        $checker->checkCustomDNS();
+        $checker->getIntelLinks();
+        echo json_encode($checker->getResults());
+    } else {
+        switch ($type) {
+            case 'nofilterDNS':
+                $checker->checkDNSGroup('nofilterDNS', $nofilterDNS);
+                break;
+            case 'secureDNS':
+                $checker->checkDNSGroup('secureDNS', $secureDNS);
+                break;
+            case 'adblockDNS':
+                $checker->checkDNSGroup('adblockDNS', $adblockDNS);
+                break;
+            case 'defaultDNS':
+                $checker->checkDefaultDNS();
+                break;
+            case 'intelLinks':
+                $checker->getIntelLinks();
+                break;
+        }
+        echo json_encode([$type => $checker->getResults()[$type]]);
+    }
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);

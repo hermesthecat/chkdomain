@@ -1,57 +1,90 @@
 $(document).ready(function () {
+    const queryTypes = ['nofilterDNS', 'secureDNS', 'adblockDNS', 'defaultDNS', 'intelLinks'];
+    let currentDomain = '';
+    let activeQueries = 0;
+
     $('#domainForm').on('submit', function (e) {
         e.preventDefault();
-        var domain = $('#domain').val().trim();
+        currentDomain = $('#domain').val().trim();
 
-        if (!domain) {
+        if (!currentDomain) {
             alert('Lütfen bir domain adı girin.');
             return;
         }
 
+        // UI'ı sıfırla
         $('.loading').show();
         $('#results').hide();
+        queryTypes.forEach(type => {
+            $(`#${type} .dns-results`).html('<div class="loading-placeholder">Yükleniyor...</div>');
+        });
+        $('#intelLinks .intel-links').html('<div class="loading-placeholder">Yükleniyor...</div>');
+
+        // Sonuçları göster ve scroll
+        $('#checkedDomain').text(currentDomain);
+        $('#results').show();
+        $('html, body').animate({
+            scrollTop: $('#results').offset().top - 20
+        }, 500);
+
+        // Her DNS grubu için ayrı sorgu yap
+        queryTypes.forEach((type, index) => {
+            setTimeout(() => {
+                loadDNSResults(type);
+            }, index * 300); // Her sorgu arasında 300ms bekle
+        });
+    });
+
+    function loadDNSResults(type) {
+        activeQueries++;
+        updateLoadingStatus();
 
         $.ajax({
             url: 'api.php',
             method: 'POST',
             data: {
-                domain: domain
+                domain: currentDomain,
+                type: type
             },
             dataType: 'json',
             success: function (response) {
-                $('#checkedDomain').text(domain);
-
-                // DNS sonuçlarını göster
-                displayDNSResults('nofilterDNS', response.nofilterDNS);
-                displayDNSResults('secureDNS', response.secureDNS);
-                displayDNSResults('adblockDNS', response.adblockDNS);
-                displayDNSResults('defaultDNS', response.defaultDNS);
-
-                // Intel linklerini göster
-                var intelHtml = '';
-                for (var name in response.intelLinks) {
-                    intelHtml += `<div class="dns-item">
-                        <a href="${response.intelLinks[name]}" class="intel-link" target="_blank">
-                            ${name} <i class="fas fa-external-link-alt"></i>
-                        </a>
-                    </div>`;
+                if (type === 'intelLinks') {
+                    let intelHtml = '';
+                    for (let name in response[type]) {
+                        intelHtml += `<div class="dns-item">
+                            <a href="${response[type][name]}" class="intel-link" target="_blank">
+                                ${name} <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>`;
+                    }
+                    $('#intelLinks .intel-links').html(intelHtml);
+                } else {
+                    displayDNSResults(type, response[type]);
                 }
-                $('#intelLinks .intel-links').html(intelHtml);
 
-                $('.loading').hide();
-                $('#results').show();
-
-                // Sonuçlara smooth scroll
-                $('html, body').animate({
-                    scrollTop: $('#results').offset().top - 20
-                }, 500);
+                activeQueries--;
+                updateLoadingStatus();
             },
             error: function (xhr, status, error) {
-                $('.loading').hide();
-                alert('Hata oluştu: ' + error);
+                console.error(`${type} sorgusu başarısız:`, error);
+                $(`#${type} .dns-results`).html(
+                    `<div class="dns-item error">
+                        <i class="fas fa-exclamation-circle status-error fa-lg"></i>
+                        <div class="dns-item-message">Yükleme hatası: ${error}</div>
+                    </div>`
+                );
+
+                activeQueries--;
+                updateLoadingStatus();
             }
         });
-    });
+    }
+
+    function updateLoadingStatus() {
+        if (activeQueries === 0) {
+            $('.loading').hide();
+        }
+    }
 
     function displayDNSResults(groupId, results) {
         var html = '';
