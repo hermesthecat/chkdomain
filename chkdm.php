@@ -42,12 +42,20 @@ if (php_sapi_name() === 'cli') {
             echo self::colorize($text, 'boldblack') . PHP_EOL;
         }
     }
-
-    function error($message)
+} else {
+    class ColorEcho
     {
-        ColorEcho::red($message);
-        exit(1);
+        public static function red($text) { echo $text . "\n"; }
+        public static function green($text) { echo $text . "\n"; }
+        public static function cyan($text) { echo $text . "\n"; }
+        public static function boldBlack($text) { echo $text . "\n"; }
     }
+}
+
+function error($message)
+{
+    ColorEcho::red($message);
+    exit(1);
 }
 
 // Gerekli komutların kontrolü
