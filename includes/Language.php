@@ -3,13 +3,30 @@ class Language
 {
     private static $instance = null;
     private $translations = [];
-    private $currentLang = 'tr';
-    private $availableLangs = ['tr', 'en'];
+    private $currentLang = 'en'; // Varsayılan dil İngilizce
+    private $availableLangs = [];
+    private $cookieName = 'preferred_language';
+    private $cookieExpiry = 2592000; // 30 gün
 
     private function __construct()
     {
-        session_start();
-        $this->currentLang = $_SESSION['lang'] ?? 'tr';
+        $this->loadAvailableLanguages();
+
+        // Dil seçimi öncelik sırası:
+        // 1. URL'den gelen lang parametresi (?lang=xx)
+        // 2. Cookie'den gelen dil tercihi
+        // 3. Varsayılan dil (en)
+        if (isset($_GET['lang']) && in_array($_GET['lang'], $this->availableLangs)) {
+            $this->currentLang = $_GET['lang'];
+            setcookie($this->cookieName, $this->currentLang, time() + $this->cookieExpiry, '/');
+            header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?'));
+            exit();
+        } elseif (isset($_COOKIE[$this->cookieName]) && in_array($_COOKIE[$this->cookieName], $this->availableLangs)) {
+            $this->currentLang = $_COOKIE[$this->cookieName];
+            header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?'));
+            exit();
+        }
+
         $this->loadTranslations();
     }
 
@@ -25,11 +42,30 @@ class Language
     {
         if (in_array($lang, $this->availableLangs)) {
             $this->currentLang = $lang;
-            $_SESSION['lang'] = $lang;
+            setcookie($this->cookieName, $lang, time() + $this->cookieExpiry, '/');
             $this->loadTranslations();
             return true;
         }
         return false;
+    }
+
+    private function loadAvailableLanguages()
+    {
+        $langDir = dirname(__DIR__) . '/lang';
+        if (is_dir($langDir)) {
+            $files = scandir($langDir);
+            foreach ($files as $file) {
+                if (preg_match('/^([a-z]{2})\.php$/', $file, $matches)) {
+                    $this->availableLangs[] = $matches[1];
+                }
+            }
+            sort($this->availableLangs);
+
+            // Eğer hiç dil dosyası bulunamazsa varsayılan olarak EN ve TR ekle
+            if (empty($this->availableLangs)) {
+                $this->availableLangs = ['en', 'tr'];
+            }
+        }
     }
 
     private function loadTranslations()
