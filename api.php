@@ -5,29 +5,33 @@
  * @author A. Kerem Gök
  */
 
+require_once __DIR__ . 'includes/language.php';
+require_once __DIR__ . 'includes/chkdm.php';
+
+$lang = Language::getInstance();
 header('Content-Type: application/json');
 
 if (!isset($_POST['domain']) || !isset($_POST['type'])) {
     http_response_code(400);
-    die(json_encode(['error' => 'Domain ve sorgu tipi parametreleri gerekli']));
+    die(json_encode(['error' => $lang->get('error_domain_required') . ' & ' . $lang->get('error_type_required')]));
 }
 
 $validTypes = ['nofilterDNS', 'secureDNS', 'adblockDNS', 'defaultDNS', 'intelLinks', 'all'];
 if (!in_array($_POST['type'], $validTypes)) {
     http_response_code(400);
-    die(json_encode(['error' => 'Geçersiz sorgu tipi']));
+    die(json_encode(['error' => $lang->get('error_invalid_type')]));
 }
-
-require_once 'chkdm.php';
 
 class DomainChecker
 {
     private $domain;
     private $results = [];
+    private $lang;
 
     public function __construct($domain)
     {
         $this->domain = $domain;
+        $this->lang = Language::getInstance();
         $this->results = [
             'nofilterDNS' => [],
             'secureDNS' => [],
@@ -54,23 +58,23 @@ class DomainChecker
                 break;
             case 1:
                 $response['status'] = 'error';
-                $response['message'] = 'Başarısız!';
+                $response['message'] = $this->lang->get('status_failed');
                 break;
             case 2:
                 $response['status'] = 'error';
-                $response['message'] = 'Palo Alto DNS Sinkhole tespit edildi!';
+                $response['message'] = $this->lang->get('status_sinkhole');
                 break;
             case 3:
                 $response['status'] = 'error';
-                $response['message'] = 'NextDNS Block Page tespit edildi!';
+                $response['message'] = $this->lang->get('status_blockpage');
                 break;
             case 4:
                 $response['status'] = 'warning';
-                $response['message'] = 'Bağlantı zaman aşımına uğradı...';
+                $response['message'] = $this->lang->get('status_timeout');
                 break;
             case 5:
                 $response['status'] = 'warning';
-                $response['message'] = 'Bağlantı reddedildi...';
+                $response['message'] = $this->lang->get('status_refused');
                 break;
         }
 
@@ -89,7 +93,7 @@ class DomainChecker
     {
         $defaultDNS = trim(shell_exec("nslookup wikipedia.org | awk '/Server:/ {print $2}' | head -n 1"));
         $queryResult = query($this->domain, $defaultDNS, true);
-        $this->results['defaultDNS']['Varsayılan'] = $this->processQueryResult('Varsayılan', $defaultDNS, $queryResult);
+        $this->results['defaultDNS'][$this->lang->get('default_dns_name')] = $this->processQueryResult($this->lang->get('default_dns_name'), $defaultDNS, $queryResult);
     }
 
     public function checkCustomDNS()
@@ -145,12 +149,10 @@ try {
         preg_match('/[a-zA-Z0-9-]{64,}/', $domain) ||
         strpos($domain, '--') !== false
     ) {
-        throw new Exception('Geçersiz domain formatı! Lütfen "example.com" veya "sub.example.com" formatında girin.');
+        throw new Exception($lang->get('error_invalid_domain'));
     }
 
     $checker = new DomainChecker($domain);
-
-    // DNS kontrolleri
     $type = $_POST['type'];
 
     if ($type === 'all') {
