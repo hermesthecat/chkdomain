@@ -30,6 +30,7 @@ return [
     'error_type_required' => 'Sorgu tipi parametresi gerekli',
     'error_invalid_type' => 'Geçersiz sorgu tipi',
     'error_loading' => 'Yükleme hatası',
+    'error_query_failed' => 'sorgusu başarısız',
 
     // Dil Seçimi
     'language' => 'Dil',

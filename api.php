@@ -96,24 +96,6 @@ class DomainChecker
         $this->results['defaultDNS'][$this->lang->get('default_dns_name')] = $this->processQueryResult($this->lang->get('default_dns_name'), $defaultDNS, $queryResult);
     }
 
-    public function checkCustomDNS()
-    {
-        $scriptDir = dirname(realpath(__FILE__));
-        $customDNSFile = $scriptDir . "/CustomDNS.txt";
-
-        if (file_exists($customDNSFile) && is_readable($customDNSFile)) {
-            $customDNSContent = file_get_contents($customDNSFile);
-            preg_match_all('/\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/', $customDNSContent, $matches);
-
-            if (!empty($matches[0])) {
-                foreach ($matches[0] as $dns) {
-                    $queryResult = query($this->domain, $dns, true);
-                    $this->results['customDNS'][$dns] = $this->processQueryResult($dns, $dns, $queryResult);
-                }
-            }
-        }
-    }
-
     public function getIntelLinks()
     {
         global $urls;
@@ -160,7 +142,6 @@ try {
         $checker->checkDNSGroup('secureDNS', $secureDNS);
         $checker->checkDNSGroup('adblockDNS', $adblockDNS);
         $checker->checkDefaultDNS();
-        $checker->checkCustomDNS();
         $checker->getIntelLinks();
         echo json_encode($checker->getResults());
     } else {

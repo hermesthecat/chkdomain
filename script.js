@@ -1,14 +1,30 @@
+let translations = {};
+
+function loadTranslations() {
+    return $.get('get_translations.php').then(function (data) {
+        translations = data;
+    });
+}
+
 $(document).ready(function () {
     const queryTypes = ['nofilterDNS', 'secureDNS', 'adblockDNS', 'defaultDNS', 'intelLinks'];
     let currentDomain = '';
     let activeQueries = 0;
+
+    // İlk çevirileri yükle
+    loadTranslations();
+
+    // Dil değiştiğinde çevirileri güncelle
+    $(document).on('click', '.lang-link', function () {
+        setTimeout(loadTranslations, 100); // Dil değişikliğinin tamamlanmasını bekle
+    });
 
     $('#domainForm').on('submit', function (e) {
         e.preventDefault();
         currentDomain = $('#domain').val().trim();
 
         if (!currentDomain) {
-            alert('Lütfen bir domain adı girin.');
+            alert(translations.error_input || 'Please enter a domain name');
             return;
         }
 
@@ -16,9 +32,13 @@ $(document).ready(function () {
         $('.loading').show();
         $('#results').hide();
         queryTypes.forEach(type => {
-            $(`#${type} .dns-results`).html('<div class="loading-placeholder">Yükleniyor...</div>');
+            $(`#${type} .dns-results`).html(
+                `<div class="loading-placeholder">${translations.loading_placeholder || 'Loading...'}</div>`
+            );
         });
-        $('#intelLinks .intel-links').html('<div class="loading-placeholder">Yükleniyor...</div>');
+        $('#intelLinks .intel-links').html(
+            `<div class="loading-placeholder">${translations.loading_placeholder || 'Loading...'}</div>`
+        );
 
         // Sonuçları göster ve scroll
         $('#checkedDomain').text(currentDomain);
@@ -66,11 +86,10 @@ $(document).ready(function () {
                 updateLoadingStatus();
             },
             error: function (xhr, status, error) {
-                console.error(`${type} sorgusu başarısız:`, error);
                 $(`#${type} .dns-results`).html(
                     `<div class="dns-item error">
                         <i class="fas fa-exclamation-circle status-error fa-lg"></i>
-                        <div class="dns-item-message">Yükleme hatası: ${error}</div>
+                        <div class="dns-item-message">${translations.error_alert || 'Loading error'}: ${error}</div>
                     </div>`
                 );
 

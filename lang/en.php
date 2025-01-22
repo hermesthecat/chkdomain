@@ -30,6 +30,7 @@ return [
     'error_type_required' => 'Query type parameter is required',
     'error_invalid_type' => 'Invalid query type',
     'error_loading' => 'Loading error',
+    'error_query_failed' => 'query failed',
 
     // Language Selection
     'language' => 'Language',
