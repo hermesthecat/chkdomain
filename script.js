@@ -110,9 +110,14 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             error: function (xhr, status, error) {
                 $(`#${type} .dns-results`).html(
-                    `<div class="dns-item error">
-                        <i class="fas fa-exclamation-circle status-error fa-lg"></i>
-                        <div class="dns-item-message">${translations.error_alert || 'Loading error'}: ${error}</div>
+                    `<div class="dns-item">
+                        <div class="dns-item-left">
+                            <i class="fas fa-exclamation-circle status-error fa-lg"></i>
+                            <span>Error</span>
+                        </div>
+                        <div class="dns-item-right">
+                            ${translations.error_alert || 'Loading error'}: ${error}
+                        </div>
                     </div>`
                 );
 
@@ -144,12 +149,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             html += `<div class="dns-item">
-                <i class="fas ${icon} ${statusClass} fa-lg"></i>
-                <div class="dns-item-content">
-                    <div class="dns-item-name">${name}</div>
-                    <div class="dns-item-ip">${status.ip}</div>
+                <div class="dns-item-left">
+                    <i class="fas ${icon} ${statusClass} fa-lg"></i>
+                    <span class="dns-item-name">${name}</span>
                 </div>
-                <div class="dns-item-message">${status.message}</div>
+                <div class="dns-item-right">
+                    ${status.ip ? `<div class="dns-item-ip">${status.ip}</div>` : ''}
+                    ${status.message ? `<div class="dns-item-message">${status.message}</div>` : ''}
+                </div>
             </div>`;
         }
         $(`#${groupId} .dns-results`).html(html);
