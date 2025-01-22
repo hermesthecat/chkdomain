@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . 'includes/language.php';
+require_once __DIR__ . '/includes/language.php';
 $lang = Language::getInstance();
 
 // JavaScript için gerekli tüm çevirileri döndür

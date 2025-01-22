@@ -5,8 +5,8 @@
  * @author A. Kerem Gök
  */
 
-require_once __DIR__ . 'includes/language.php';
-require_once __DIR__ . 'includes/chkdm.php';
+require_once __DIR__ . '/includes/language.php';
+require_once __DIR__ . '/includes/chkdm.php';
 
 $lang = Language::getInstance();
 header('Content-Type: application/json');

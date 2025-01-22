@@ -19,12 +19,8 @@ class Language
         if (isset($_GET['lang']) && in_array($_GET['lang'], $this->availableLangs)) {
             $this->currentLang = $_GET['lang'];
             setcookie($this->cookieName, $this->currentLang, time() + $this->cookieExpiry, '/');
-            header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?'));
-            exit();
         } elseif (isset($_COOKIE[$this->cookieName]) && in_array($_COOKIE[$this->cookieName], $this->availableLangs)) {
             $this->currentLang = $_COOKIE[$this->cookieName];
-            header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?'));
-            exit();
         }
 
         $this->loadTranslations();
