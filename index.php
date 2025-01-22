@@ -124,11 +124,6 @@
                     <div class="dns-results"></div>
                 </div>
 
-                <div id="customDNS" class="dns-group">
-                    <h4><i class="fas fa-cog"></i> Özel DNS Sunucuları</h4>
-                    <div class="dns-results"></div>
-                </div>
-
                 <div id="intelLinks" class="dns-group">
                     <h4><i class="fas fa-info-circle"></i> Domain Güvenlik Bilgileri</h4>
                     <div class="intel-links"></div>
@@ -177,9 +172,6 @@
                         displayDNSResults('secureDNS', response.secureDNS);
                         displayDNSResults('adblockDNS', response.adblockDNS);
                         displayDNSResults('defaultDNS', response.defaultDNS);
-                        if (response.customDNS) {
-                            displayDNSResults('customDNS', response.customDNS);
-                        }
 
                         // Intel linklerini göster
                         var intelHtml = '';

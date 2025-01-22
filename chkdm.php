@@ -1,5 +1,9 @@
-#!/usr/bin/env php
 <?php
+// CLI modunda çalışıyorsa shebang satırını ekle
+if (php_sapi_name() === 'cli') {
+    echo "#!/usr/bin/env php\n";
+}
+
 /**
  * chkdm (chkdomain)
  * PHP version of https://github.com/PeterDaveHello/chkdomain
@@ -45,10 +49,22 @@ if (php_sapi_name() === 'cli') {
 } else {
     class ColorEcho
     {
-        public static function red($text) { echo $text . "\n"; }
-        public static function green($text) { echo $text . "\n"; }
-        public static function cyan($text) { echo $text . "\n"; }
-        public static function boldBlack($text) { echo $text . "\n"; }
+        public static function red($text)
+        {
+            echo $text . "\n";
+        }
+        public static function green($text)
+        {
+            echo $text . "\n";
+        }
+        public static function cyan($text)
+        {
+            echo $text . "\n";
+        }
+        public static function boldBlack($text)
+        {
+            echo $text . "\n";
+        }
     }
 }
 
@@ -58,10 +74,22 @@ function error($message)
     exit(1);
 }
 
+// İşletim sistemi kontrolü
+$isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
 // Gerekli komutların kontrolü
-$requiredCommands = ['dig', 'nslookup', 'sed', 'head', 'awk', 'sort', 'dirname', 'readlink'];
+if ($isWindows) {
+    $requiredCommands = ['nslookup'];
+} else {
+    $requiredCommands = ['dig', 'nslookup', 'sed', 'head', 'awk', 'sort', 'dirname', 'readlink'];
+}
+
 foreach ($requiredCommands as $cmd) {
-    exec("command -v $cmd 2>&1", $output, $returnVar);
+    if ($isWindows) {
+        exec("where $cmd 2>&1", $output, $returnVar);
+    } else {
+        exec("command -v $cmd 2>&1", $output, $returnVar);
+    }
     if ($returnVar !== 0) {
         error("command: $cmd not found!");
     }
@@ -109,9 +137,24 @@ $NextDNSBlockPageIP = trim(shell_exec("dig +short $NextDNSBlockPageCname"));
 
 function query($domain, $dns, $filterDetect = false)
 {
-    global $PaloAltoSinkholeCname, $NextDNSBlockPageCname, $NextDNSBlockPageIP;
+    global $PaloAltoSinkholeCname, $NextDNSBlockPageCname, $NextDNSBlockPageIP, $isWindows;
 
-    $result = trim(shell_exec("dig +short $domain @$dns"));
+    if ($isWindows) {
+        $result = trim(shell_exec("nslookup -type=A $domain $dns 2>&1"));
+        // Windows'ta nslookup çıktısını işle
+        if (strpos($result, "Server failed") !== false || strpos($result, "No response from server") !== false) {
+            return [4, $result];
+        }
+
+        preg_match_all('/Address(?:\(es\))?:\s*([^\s]+)/', $result, $matches);
+        if (!empty($matches[1])) {
+            $result = end($matches[1]); // Son IP adresini al
+        } else {
+            $result = "";
+        }
+    } else {
+        $result = trim(shell_exec("dig +short $domain @$dns"));
+    }
 
     if (strpos($result, $PaloAltoSinkholeCname) !== false) {
         return [2, $result];
@@ -121,16 +164,23 @@ function query($domain, $dns, $filterDetect = false)
         return [3, $result];
     }
 
-    if (strpos($result, "connection timed out; no servers could be reached") !== false) {
-        return [4, $result];
-    }
-
-    if (preg_match("/communications error to $dns#[1-9]+: timed out/", $result)) {
-        return [4, $result];
-    }
-
-    if (preg_match("/communications error to $dns#[0-9]+: connection refused/", $result)) {
-        return [5, $result];
+    if ($isWindows) {
+        if (strpos($result, "timed out") !== false || strpos($result, "No response from server") !== false) {
+            return [4, $result];
+        }
+        if (strpos($result, "refused") !== false) {
+            return [5, $result];
+        }
+    } else {
+        if (strpos($result, "connection timed out; no servers could be reached") !== false) {
+            return [4, $result];
+        }
+        if (preg_match("/communications error to $dns#[1-9]+: timed out/", $result)) {
+            return [4, $result];
+        }
+        if (preg_match("/communications error to $dns#[0-9]+: connection refused/", $result)) {
+            return [5, $result];
+        }
     }
 
     if ($filterDetect !== "filterDetect") {
@@ -163,18 +213,25 @@ function query($domain, $dns, $filterDetect = false)
 
 function detailQuery($domain, $dns)
 {
+    global $isWindows;
     $result = shell_exec("nslookup $domain $dns");
     $lines = explode("\n", $result);
     $filtered = [];
 
     foreach ($lines as $line) {
-        if (
-            !preg_match('/^(Server|Address):\t.+/', $line) &&
-            !preg_match('/.+answer:$/', $line) &&
-            !preg_match('/^Name:\t+.+$/', $line) &&
-            trim($line) !== ''
-        ) {
-            $filtered[] = "   " . trim($line);
+        if ($isWindows) {
+            if (!preg_match('/^(Server|Address|DNS request timed out|>|Name)/', trim($line)) && trim($line) !== '') {
+                $filtered[] = "   " . trim($line);
+            }
+        } else {
+            if (
+                !preg_match('/^(Server|Address):\t.+/', $line) &&
+                !preg_match('/.+answer:$/', $line) &&
+                !preg_match('/^Name:\t+.+$/', $line) &&
+                trim($line) !== ''
+            ) {
+                $filtered[] = "   " . trim($line);
+            }
         }
     }
 
@@ -213,9 +270,14 @@ function chkDomain($domain, $dns, $filterDetect = false)
 
 function warnUpDNS($domain, $nofilterDNS, $secureDNS, $adblockDNS)
 {
+    global $isWindows;
     $allDNS = array_merge($nofilterDNS, $secureDNS, $adblockDNS);
     foreach ($allDNS as $dns) {
-        shell_exec("dig +short $domain @$dns > /dev/null 2>&1 &");
+        if ($isWindows) {
+            shell_exec("start /B nslookup $domain $dns >nul 2>&1");
+        } else {
+            shell_exec("dig +short $domain @$dns > /dev/null 2>&1 &");
+        }
     }
 }
 
@@ -231,7 +293,19 @@ function checkDNSGroup($groupName, $dnsServers, $domain, $filterDetect = false)
 
 function checkDefaultDNS($domain)
 {
-    $defaultDNS = trim(shell_exec("nslookup wikipedia.org | awk '/Server:/ {print $2}' | head -n 1"));
+    global $isWindows;
+    if ($isWindows) {
+        // Windows'ta varsayılan DNS sunucusunu al
+        $cmd = 'ipconfig /all | findstr "DNS Servers" | findstr /v "::1" | findstr /v "127.0.0.1" | findstr /R "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"';
+        $result = shell_exec($cmd);
+        if (preg_match('/\b(?:\d{1,3}\.){3}\d{1,3}\b/', $result, $matches)) {
+            $defaultDNS = $matches[0];
+        } else {
+            $defaultDNS = "8.8.8.8"; // Varsayılan olarak Google DNS
+        }
+    } else {
+        $defaultDNS = trim(shell_exec("nslookup wikipedia.org | awk '/Server:/ {print $2}' | head -n 1"));
+    }
     ColorEcho::cyan("\nRunning nslookup over default DNS ($defaultDNS):");
     echo " - $defaultDNS ... ";
     chkDomain($domain, $defaultDNS, "filterDetect");
@@ -269,10 +343,12 @@ if (php_sapi_name() === 'cli') {
     $domain = rtrim($argv[1], '.');
 
     // Domain validasyonu
-    if (strlen($domain) > 253 ||
+    if (
+        strlen($domain) > 253 ||
         !preg_match('/^([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/', $domain) ||
         preg_match('/[a-zA-Z0-9-]{64,}/', $domain) ||
-        strpos($domain, '--') !== false) {
+        strpos($domain, '--') !== false
+    ) {
         error("Invalid domain name format! Please use format like 'example.com' or 'sub.example.com'");
     }
 
