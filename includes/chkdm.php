@@ -1,8 +1,4 @@
 <?php
-// CLI modunda çalışıyorsa shebang satırını ekle
-if (php_sapi_name() === 'cli') {
-    echo "#!/usr/bin/env php\n";
-}
 
 /**
  * chkdm (chkdomain)
@@ -10,69 +6,6 @@ if (php_sapi_name() === 'cli') {
  * @author A. Kerem Gök
  * @license GPL-3.0
  */
-
-// CLI modunda çalışıyorsa renk çıktıları aktif olsun
-if (php_sapi_name() === 'cli') {
-    class ColorEcho
-    {
-        private static function colorize($text, $color)
-        {
-            $colors = [
-                'red' => "\033[31m",
-                'green' => "\033[32m",
-                'cyan' => "\033[36m",
-                'boldblack' => "\033[1;30m"
-            ];
-            return $colors[$color] . $text . "\033[m";
-        }
-
-        public static function red($text)
-        {
-            echo self::colorize($text, 'red') . PHP_EOL;
-        }
-
-        public static function green($text)
-        {
-            echo self::colorize($text, 'green') . PHP_EOL;
-        }
-
-        public static function cyan($text)
-        {
-            echo self::colorize($text, 'cyan') . PHP_EOL;
-        }
-
-        public static function boldBlack($text)
-        {
-            echo self::colorize($text, 'boldblack') . PHP_EOL;
-        }
-    }
-} else {
-    class ColorEcho
-    {
-        public static function red($text)
-        {
-            echo $text . "\n";
-        }
-        public static function green($text)
-        {
-            echo $text . "\n";
-        }
-        public static function cyan($text)
-        {
-            echo $text . "\n";
-        }
-        public static function boldBlack($text)
-        {
-            echo $text . "\n";
-        }
-    }
-}
-
-function error($message)
-{
-    ColorEcho::red($message);
-    exit(1);
-}
 
 // İşletim sistemi kontrolü
 $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
@@ -91,7 +24,7 @@ foreach ($requiredCommands as $cmd) {
         exec("command -v $cmd 2>&1", $output, $returnVar);
     }
     if ($returnVar !== 0) {
-        error("command: $cmd not found!");
+        throw new Exception("command: $cmd not found!");
     }
 }
 
@@ -237,130 +170,4 @@ function detailQuery($domain, $dns)
 
     sort($filtered);
     return implode("\n", array_unique($filtered));
-}
-
-function chkDomain($domain, $dns, $filterDetect = false)
-{
-    list($status, $queryResult) = query($domain, $dns, $filterDetect);
-
-    switch ($status) {
-        case 0:
-            echo ColorEcho::green("OK!") . " " . ColorEcho::boldBlack("($queryResult)");
-            break;
-        case 1:
-            ColorEcho::red("Failed!");
-            echo detailQuery($domain, $dns);
-            break;
-        case 2:
-            ColorEcho::red("Palo Alto DNS Sinkhole detected!");
-            break;
-        case 3:
-            ColorEcho::red("NextDNS Block Page detected!");
-            break;
-        case 4:
-            echo "Connection timed out ...";
-            break;
-        case 5:
-            echo "Connection refused ...";
-            break;
-        default:
-            error("Unknown error");
-    }
-}
-
-function warnUpDNS($domain, $nofilterDNS, $secureDNS, $adblockDNS)
-{
-    global $isWindows;
-    $allDNS = array_merge($nofilterDNS, $secureDNS, $adblockDNS);
-    foreach ($allDNS as $dns) {
-        if ($isWindows) {
-            shell_exec("start /B nslookup $domain $dns >nul 2>&1");
-        } else {
-            shell_exec("dig +short $domain @$dns > /dev/null 2>&1 &");
-        }
-    }
-}
-
-function checkDNSGroup($groupName, $dnsServers, $domain, $filterDetect = false)
-{
-    ColorEcho::cyan("\nRunning dig/nslookup over " . count($dnsServers) . " $groupName:");
-    ksort($dnsServers);
-    foreach ($dnsServers as $name => $ip) {
-        echo " - $name " . ColorEcho::boldBlack("($ip)") . " ... ";
-        chkDomain($domain, $ip, $filterDetect);
-    }
-}
-
-function checkDefaultDNS($domain)
-{
-    global $isWindows;
-    if ($isWindows) {
-        // Windows'ta varsayılan DNS sunucusunu al
-        $cmd = 'ipconfig /all | findstr "DNS Servers" | findstr /v "::1" | findstr /v "127.0.0.1" | findstr /R "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"';
-        $result = shell_exec($cmd);
-        if (preg_match('/\b(?:\d{1,3}\.){3}\d{1,3}\b/', $result, $matches)) {
-            $defaultDNS = $matches[0];
-        } else {
-            $defaultDNS = "8.8.8.8"; // Varsayılan olarak Google DNS
-        }
-    } else {
-        $defaultDNS = trim(shell_exec("nslookup wikipedia.org | awk '/Server:/ {print $2}' | head -n 1"));
-    }
-    ColorEcho::cyan("\nRunning nslookup over default DNS ($defaultDNS):");
-    echo " - $defaultDNS ... ";
-    chkDomain($domain, $defaultDNS, "filterDetect");
-}
-
-function showDomainIntel($domain)
-{
-    ColorEcho::cyan("\nGet more intels about this domain from:");
-    $urls = [
-        "AlienVault Open Threat Exchange" => "https://otx.alienvault.com/indicator/domain/$domain",
-        "Bitdefender TrafficLight" => "https://trafficlight.bitdefender.com/info/?url=https%3A%2F%2F$domain",
-        "Google Safe Browsing" => "https://transparencyreport.google.com/safe-browsing/search?url=$domain",
-        "Kaspersky Threat Intelligence Portal" => "https://opentip.kaspersky.com/$domain?tab=web",
-        "McAfee SiteAdvisor" => "https://siteadvisor.com/sitereport.html?url=$domain",
-        "Norton Safe Web" => "https://safeweb.norton.com/report/show?url=$domain",
-        "OpenDNS" => "https://domain.opendns.com/$domain",
-        "URLVoid" => "https://www.urlvoid.com/scan/$domain/",
-        "urlscan.io" => "https://urlscan.io/domain/$domain",
-        "VirusTotal" => "https://www.virustotal.com/gui/domain/$domain/detection",
-        "Whois.com" => "https://www.whois.com/whois/$domain",
-        "Yandex Site safety report" => "https://yandex.com/safety/?l10n=en&url=$domain"
-    ];
-
-    foreach ($urls as $name => $url) {
-        echo "  - $name\n    $url\n";
-    }
-}
-
-// CLI modunda çalışıyorsa ana programı çalıştır
-if (php_sapi_name() === 'cli') {
-    if ($argc !== 2) {
-        error("You need to give me just one domain name to run the check!");
-    }
-
-    $domain = rtrim($argv[1], '.');
-
-    // Domain validasyonu
-    if (
-        strlen($domain) > 253 ||
-        !preg_match('/^([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/', $domain) ||
-        preg_match('/[a-zA-Z0-9-]{64,}/', $domain) ||
-        strpos($domain, '--') !== false
-    ) {
-        error("Invalid domain name format! Please use format like 'example.com' or 'sub.example.com'");
-    }
-
-    ColorEcho::cyan("You are checking domain: $domain");
-
-    // DNS kontrolleri
-    warnUpDNS($domain, $nofilterDNS, $secureDNS, $adblockDNS);
-
-    checkDNSGroup("nofilter DNS", $nofilterDNS, $domain, false);
-    checkDNSGroup("secure DNS", $secureDNS, $domain, "filterDetect");
-    checkDNSGroup("AD(and tracker)-blocking DNS", $adblockDNS, $domain, "filterDetect");
-    checkDefaultDNS($domain);
-
-    showDomainIntel($domain);
 }
