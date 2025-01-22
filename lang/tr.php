@@ -17,12 +17,12 @@ return [
     'security_info' => 'Domain Güvenlik Bilgileri',
 
     // Durum Mesajları
-    'status_ok' => 'OK!',
-    'status_failed' => 'Başarısız!',
-    'status_sinkhole' => 'Palo Alto DNS Sinkhole tespit edildi!',
-    'status_blockpage' => 'NextDNS Block Page tespit edildi!',
-    'status_timeout' => 'Bağlantı zaman aşımına uğradı...',
-    'status_refused' => 'Bağlantı reddedildi...',
+    'status_ok' => '✅',
+    'status_failed' => '❌',
+    'status_sinkhole' => '🚫 Palo Alto DNS Sinkhole tespit edildi!',
+    'status_blockpage' => '🚫 NextDNS Block Page tespit edildi!',
+    'status_timeout' => '⚠️ Bağlantı zaman aşımına uğradı...',
+    'status_refused' => '⚠️ Bağlantı reddedildi...',
 
     // Hata Mesajları
     'error_invalid_domain' => 'Geçersiz domain formatı! Lütfen "example.com" veya "sub.example.com" formatında girin.',

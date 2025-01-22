@@ -138,26 +138,36 @@ document.addEventListener('DOMContentLoaded', function () {
         for (var name in results) {
             var status = results[name];
             var statusClass = 'status-ok';
-            var icon = 'fa-check-circle';
+            var statusIcon = '✅';
 
             if (status.status === 'error') {
                 statusClass = 'status-error';
-                icon = 'fa-times-circle';
+                statusIcon = '❌';
             } else if (status.status === 'warning') {
                 statusClass = 'status-warning';
-                icon = 'fa-exclamation-circle';
+                statusIcon = '⚠️';
+            }
+
+            // Mesajı düzenle
+            let message;
+            if (status.status === 'ok') {
+                message = status.message;
+                if (!message.includes('✅')) {
+                    message = `✅ ${message}`;
+                }
+            } else {
+                message = status.message;
             }
 
             html += `<div class="dns-item">
                 <div class="dns-item-left">
-                    <i class="fas ${icon} ${statusClass} fa-lg"></i>
                     <span class="dns-item-name">
                         ${name}
                         ${status.ip ? `<span class="dns-item-ip">(${status.ip})</span>` : ''}
                     </span>
                 </div>
                 <div class="dns-item-right">
-                    ${status.message ? `<div class="dns-item-message">${status.message}</div>` : ''}
+                    <div class="dns-item-message">${message}</div>
                 </div>
             </div>`;
         }

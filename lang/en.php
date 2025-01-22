@@ -17,12 +17,12 @@ return [
     'security_info' => 'Domain Security Information',
 
     // Status Messages
-    'status_ok' => 'OK!',
-    'status_failed' => 'Failed!',
-    'status_sinkhole' => 'Palo Alto DNS Sinkhole detected!',
-    'status_blockpage' => 'NextDNS Block Page detected!',
-    'status_timeout' => 'Connection timed out...',
-    'status_refused' => 'Connection refused...',
+    'status_ok' => '✅',
+    'status_failed' => '❌',
+    'status_sinkhole' => '🚫 Palo Alto DNS Sinkhole detected!',
+    'status_blockpage' => '🚫 NextDNS Block Page detected!',
+    'status_timeout' => '⚠️ Connection timed out...',
+    'status_refused' => '⚠️ Connection refused...',
 
     // Error Messages
     'error_invalid_domain' => 'Invalid domain format! Please enter in the format "example.com" or "sub.example.com".',

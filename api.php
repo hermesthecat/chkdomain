@@ -54,7 +54,7 @@ class DomainChecker
 
         switch ($status) {
             case 0:
-                $response['message'] = "OK! ($result)";
+                $response['message'] = $result;
                 break;
             case 1:
                 $response['status'] = 'error';
