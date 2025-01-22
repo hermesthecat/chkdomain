@@ -1,23 +1,46 @@
-let translations = {};
+document.addEventListener('DOMContentLoaded', function () {
+    // Tema yönetimi
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
 
-function loadTranslations() {
-    return $.get('get_translations.php').then(function (data) {
-        translations = data;
+    // İlk tema ayarı
+    if (savedTheme) {
+        html.setAttribute('data-theme', savedTheme);
+        themeToggle.querySelector('i').className = `fas fa-${savedTheme === 'dark' ? 'sun' : 'moon'}`;
+    }
+
+    // Tema değiştirme
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        html.setAttribute('data-theme', newTheme);
+        themeToggle.querySelector('i').className = `fas fa-${newTheme === 'dark' ? 'sun' : 'moon'}`;
+        localStorage.setItem('theme', newTheme);
     });
-}
 
-$(document).ready(function () {
-    const queryTypes = ['nofilterDNS', 'secureDNS', 'adblockDNS', 'defaultDNS', 'intelLinks'];
-    let currentDomain = '';
-    let activeQueries = 0;
+    // Çeviri yönetimi
+    let translations = {};
+    function loadTranslations() {
+        return $.get('get_translations.php').then(function (data) {
+            translations = data;
+        });
+    }
 
     // İlk çevirileri yükle
     loadTranslations();
 
     // Dil değiştiğinde çevirileri güncelle
     $(document).on('click', '.lang-link', function () {
-        setTimeout(loadTranslations, 100); // Dil değişikliğinin tamamlanmasını bekle
+        setTimeout(loadTranslations, 100);
     });
+
+    // DNS sorguları
+    const queryTypes = ['nofilterDNS', 'secureDNS', 'adblockDNS', 'defaultDNS', 'intelLinks'];
+    let currentDomain = '';
+    let activeQueries = 0;
 
     $('#domainForm').on('submit', function (e) {
         e.preventDefault();
@@ -51,7 +74,7 @@ $(document).ready(function () {
         queryTypes.forEach((type, index) => {
             setTimeout(() => {
                 loadDNSResults(type);
-            }, index * 300); // Her sorgu arasında 300ms bekle
+            }, index * 300);
         });
     });
 

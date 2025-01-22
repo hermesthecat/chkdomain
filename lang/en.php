@@ -36,5 +36,10 @@ return [
     // Language Selection
     'language' => 'Language',
     'lang_tr' => 'Türkçe',
-    'lang_en' => 'English'
+    'lang_en' => 'English',
+
+    // Theme
+    'theme_light' => 'Light Mode',
+    'theme_dark' => 'Dark Mode',
+    'theme_toggle' => 'Toggle Theme'
 ];

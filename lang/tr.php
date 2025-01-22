@@ -36,5 +36,10 @@ return [
     // Dil Seçimi
     'language' => 'Dil',
     'lang_tr' => 'Türkçe',
-    'lang_en' => 'English'
+    'lang_en' => 'English',
+
+    // Tema
+    'theme_light' => 'Aydınlık Mod',
+    'theme_dark' => 'Karanlık Mod',
+    'theme_toggle' => 'Temayı Değiştir'
 ];

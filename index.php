@@ -7,7 +7,7 @@ if (isset($_GET['lang'])) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo $lang->getCurrentLang(); ?>">
+<html lang="<?php echo $lang->getCurrentLang(); ?>" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -19,6 +19,9 @@ if (isset($_GET['lang'])) {
 </head>
 
 <body>
+    <button class="theme-toggle" id="themeToggle" aria-label="<?php echo $lang->get('theme_toggle'); ?>" title="<?php echo $lang->get('theme_toggle'); ?>">
+        <i class="fas fa-moon"></i>
+    </button>
     <div class="container py-5">
         <?php echo $lang->getLanguageSelector(); ?>
         <h1 class="text-center mb-4"><?php echo $lang->get('title'); ?></h1>
@@ -96,9 +99,10 @@ if (isset($_GET['lang'])) {
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
 </body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
 
 </html>
