@@ -362,24 +362,5 @@ if (php_sapi_name() === 'cli') {
     checkDNSGroup("AD(and tracker)-blocking DNS", $adblockDNS, $domain, "filterDetect");
     checkDefaultDNS($domain);
 
-    // Custom DNS kontrolü
-    $scriptDir = dirname(realpath(__FILE__));
-    $customDNSFile = $scriptDir . "/CustomDNS.txt";
-
-    if (file_exists($customDNSFile) && is_readable($customDNSFile)) {
-        $customDNSContent = file_get_contents($customDNSFile);
-        $customDNSList = [];
-
-        preg_match_all('/\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/', $customDNSContent, $matches);
-
-        if (!empty($matches[0])) {
-            ColorEcho::cyan("\nRunning nslookup over " . count($matches[0]) . " custom DNS:");
-            foreach ($matches[0] as $dns) {
-                echo " - $dns ... ";
-                chkDomain($domain, $dns, "filterDetect");
-            }
-        }
-    }
-
     showDomainIntel($domain);
 }
