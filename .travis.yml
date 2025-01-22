@@ -1,79 +1,48 @@
-language: minimal
-dist: jammy
+language: php
 
-git:
-  depth: 5
+php:
+  - "7.4"
+  - "8.0"
+  - "8.1"
+  - "8.2"
 
-jobs:
-  include:
+os:
+  - linux
 
-  - stage: Static tests
-    env:
-      - task=shellcheck
-    script:
-      - shellcheck chkdm
-  - stage: Static tests
-    language: node_js
-    node_js:
-      - "18"
-    env:
-      - task=editorconfig-check
-    install:
-      - npm i -g echint
-    script:
-      - echint
+addons:
+  apt:
+    packages:
+      - dnsutils # dig ve nslookup için
+      - coreutils # sort ve dirname için
 
-  - stage: Ubuntu test
-    env:
-      - task=Ubuntu-runtime
-    before_script:
-      - echo $PATH
-      - type bash && bash --version
-      - echo -e '8.8.4.4\n1.0.0.1\n1.1' > CustomDNS.txt
-      - echo -e '223.5.5.5\n114.114.114.114' > CustomDNS2.txt
-    script:
-      - ./chkdm dnslow.me
-      - CustomDNSFile=./CustomDNS2.txt ./chkdm dnslow.me
-      - rm CustomDNS.txt && ./chkdm dnslow.me
-      - CustomDNSFile=./CustomDNS-not-exist.txt ./chkdm dnslow.me
+before_script:
+  - chmod +x chkdm.php
 
-  - stage: Ubuntu test
-    env:
-      - task=Ubuntu-Make-install-uninstall
-    script:
-      - sudo make install && ls /usr/local/bin/chkdm
-      - sudo make uninstall && ! ls /usr/local/bin/chkdm
+script:
+  # Temel komutların varlığını kontrol et
+  - command -v dig
+  - command -v nslookup
+  - command -v sed
+  - command -v head
+  - command -v awk
+  - command -v sort
+  - command -v dirname
+  - command -v readlink
 
-  - stage: macOS test
-    os: osx
-    osx_image: xcode14.2
-    env:
-      - task=macOS-runtime
-    addons:
-      homebrew:
-        packages:
-          - bash
-        update: true
-    before_script:
-      - echo $PATH
-      - export PATH="$(brew --prefix)/bin:$PATH"
-      - echo $PATH
-      - brew info bash
-      - which bash
-      - env bash --version
-      - echo -e '8.8.4.4\n1.0.0.1\n1.1' > CustomDNS.txt
-      - echo -e '223.5.5.5\n114.114.114.114' > CustomDNS2.txt
-    script:
-      - ./chkdm dnslow.me
-      - CustomDNSFile=./CustomDNS2.txt ./chkdm dnslow.me
-      - rm CustomDNS.txt && ./chkdm dnslow.me
-      - CustomDNSFile=./CustomDNS-not-exist.txt ./chkdm dnslow.me
+  # PHP syntax kontrolü
+  - php -l chkdm.php
+  - php -l index.php
+  - php -l api.php
 
-  - stage: macOS test
-    os: osx
-    osx_image: xcode14.2
-    env:
-      - task=macOS-Make-install-uninstall
-    script:
-      - sudo make install && ls /usr/local/bin/chkdm
-      - sudo make uninstall && ! ls /usr/local/bin/chkdm
+  # Örnek domain kontrolü
+  - php chkdm.php example.com
+
+  # Web sunucusu testi
+  - php -S localhost:8000 &
+  - sleep 3
+  - curl -s http://localhost:8000 | grep "Domain Checker"
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
