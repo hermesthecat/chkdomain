@@ -108,9 +108,11 @@ body {
 
 .dns-item-ip {
     color: var(--text-color);
-    opacity: 0.9;
+    opacity: 0.75;
     font-family: monospace;
-    font-size: 0.95em;
+    font-size: 0.9em;
+    font-weight: normal;
+    margin-left: 5px;
 }
 
 .dns-item-message {

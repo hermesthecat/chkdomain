@@ -151,10 +151,12 @@ document.addEventListener('DOMContentLoaded', function () {
             html += `<div class="dns-item">
                 <div class="dns-item-left">
                     <i class="fas ${icon} ${statusClass} fa-lg"></i>
-                    <span class="dns-item-name">${name}</span>
+                    <span class="dns-item-name">
+                        ${name}
+                        ${status.ip ? `<span class="dns-item-ip">(${status.ip})</span>` : ''}
+                    </span>
                 </div>
                 <div class="dns-item-right">
-                    ${status.ip ? `<div class="dns-item-ip">${status.ip}</div>` : ''}
                     ${status.message ? `<div class="dns-item-message">${status.message}</div>` : ''}
                 </div>
             </div>`;
