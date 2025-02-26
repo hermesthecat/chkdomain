@@ -1,128 +1,113 @@
 # Domain Checker (chkdomain)
 
-[🇹🇷 Türkçe](#türkçe) | [🇺🇸 English](#english)
+[![Türkçe](https://img.shields.io/badge/Türkçe-TR-blue.svg)](https://github.com/yourusername/chkdomain/blob/main/README.md#türkçe)
+[![English](https://img.shields.io/badge/English-US-green.svg)](https://github.com/yourusername/chkdomain/blob/main/README.md#english)
 
 ---
 
-# Türkçe
+This project provides a PHP-based tool for checking domain names against various DNS servers and security blacklists. It offers both a web interface and a command-line interface (CLI) for flexible usage.
 
-Domain adreslerini çeşitli DNS sunucuları üzerinden kontrol eden ve güvenlik bilgilerini gösteren bir PHP uygulaması.
+## Key Features
 
-## Özellikler
+- **Comprehensive DNS Checks:** Verify domain accessibility and security across multiple DNS providers.
+- **Categorized DNS Servers:** Test against normal, secure, and ad-blocking DNS server lists.
+- **Custom DNS Configuration:** Add your own DNS servers for tailored testing.
+- **Security Intelligence Integration:** Links to reputable security services for threat assessment.
+- **Modern User Interface:** A responsive web interface built with AJAX for real-time results.
+- **Command-Line Interface:** A powerful CLI tool for automated or script-based domain analysis.
 
-- Birden fazla DNS sunucusu üzerinden domain kontrolü
-- Normal, güvenli ve reklam engelleyici DNS sunucuları desteği
-- Özel DNS sunucuları desteği (CustomDNS.txt)
-- Domain güvenlik bilgileri ve tarama servisleri
-- Modern web arayüzü ve CLI desteği
-- AJAX ile anlık sonuçlar
-- Responsive tasarım
+## Requirements
 
-## Gereksinimler
+- PHP 7.4 or higher
+- Command-line tools: `dig`, `nslookup`, `sed`, `head`, `awk`, `sort`, `dirname`, `readlink` (some are OS-dependent)
 
-- PHP 7.4 veya üzeri
-- dig
-- nslookup
-- sed
-- head
-- awk
-- sort
-- dirname
-- readlink
+## Installation
 
-## Kurulum
+1. Clone the repository:
 
-1. Repoyu klonlayın:
+   ```bash
+   git clone https://github.com/yourusername/chkdomain.git
+   cd chkdomain
+   ```
 
-```bash
-git clone https://github.com/yourusername/chkdomain.git
-cd chkdomain
-```
+2. Set file permissions:
 
-2. Dosya izinlerini ayarlayın:
+   ```bash
+   chmod +x chkdm.php
+   ```
 
-```bash
-chmod +x chkdm.php
-```
+## Usage
 
-## Kullanım
+### Web Interface
 
-### Web Arayüzü
+1. Start PHP's built-in web server:
 
-1. PHP'nin dahili web sunucusunu başlatın:
+   ```bash
+   php -S localhost:8000
+   ```
 
-```bash
-php -S localhost:8000
-```
+2. Visit `http://localhost:8000` in your browser.
+3. Enter a domain name and click "Check".
+4. Review results from different DNS servers and security services.
 
-2. Tarayıcınızdan `http://localhost:8000` adresine gidin
-3. Domain adını girin ve "Kontrol Et" butonuna tıklayın
-4. Sonuçları görüntüleyin:
-   - Normal DNS sunucuları
-   - Güvenli DNS sunucuları
-   - Reklam engelleyici DNS sunucuları
-   - Varsayılan DNS sunucusu
-   - Özel DNS sunucuları (varsa)
-   - Domain güvenlik bilgileri ve bağlantıları
-
-### Komut Satırı (CLI)
+### Command Line (CLI)
 
 ```bash
 ./chkdm.php example.com
-# veya
+# or
 php chkdm.php example.com
 ```
 
-## Özel DNS Sunucuları
+## Custom DNS Servers
 
-Kendi DNS sunucularınızı eklemek için:
+To add your own DNS servers:
 
-1. Proje dizininde `CustomDNS.txt` dosyası oluşturun
-2. Her satıra bir DNS sunucusu IP adresi ekleyin
-3. Yorum satırları için # kullanabilirsiniz
+1. Create a `CustomDNS.txt` file in the project directory.
+2. Add one DNS server IP address per line.
+3. Use `#` for comments.
 
-Örnek `CustomDNS.txt`:
+Example `CustomDNS.txt`:
 
 ```
-# Türk Telekom DNS
-212.175.192.166
-212.175.192.167
+# Local ISP DNS
+192.168.1.1
+192.168.1.2
 
 # Google DNS
 8.8.8.8
 8.8.4.4
 ```
 
-## Desteklenen DNS Sunucuları
+## Supported DNS Servers
 
-### Normal DNS Sunucuları
+### Normal DNS Servers
 
 - AdGuard (94.140.14.140)
 - Cloudflare (1.1.1.1)
 - Google (8.8.8.8)
 - OpenDNS (208.67.222.2)
 - Quad9 (9.9.9.10)
-- ve diğerleri...
+- and others...
 
-### Güvenli DNS Sunucuları
+### Secure DNS Servers
 
 - CleanBrowsing (185.228.168.9)
 - Cloudflare (1.1.1.2)
 - Comodo (8.26.56.26)
 - OpenDNS (208.67.222.222)
 - Quad9 (9.9.9.9)
-- ve diğerleri...
+- and others...
 
-### Reklam Engelleyici DNS Sunucuları
+### Ad-blocking DNS Servers
 
 - AdGuard (94.140.14.14)
 - CONTROL D (76.76.2.2)
 - dnsforge.de (176.9.93.198)
-- ve diğerleri...
+- and others...
 
-## Güvenlik Kontrolleri
+## Security Checks
 
-Domain'ler aşağıdaki servisler üzerinden kontrol edilebilir:
+Domains can be checked through the following services:
 
 - AlienVault OTX
 - Bitdefender TrafficLight
@@ -137,17 +122,17 @@ Domain'ler aşağıdaki servisler üzerinden kontrol edilebilir:
 - Whois.com
 - Yandex Site Safety
 
-## Lisans
+## License
 
-Bu proje GPL-3.0 lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+This project is licensed under the GPL-3.0 license. See [LICENSE](LICENSE) for details.
 
-## Yazar
+## Author
 
 A. Kerem Gök
 
-## Katkıda Bulunanlar
+## Contributors
 
-- Peter Dave Hello (Orijinal bash script)
+- Peter Dave Hello (Original bash script)
 
 ---
 
@@ -243,6 +228,7 @@ Example `CustomDNS.txt`:
 ## Supported DNS Servers
 
 ### Normal DNS Servers
+
 - AdGuard (94.140.14.140)
 - Cloudflare (1.1.1.1)
 - Google (8.8.8.8)
@@ -251,6 +237,7 @@ Example `CustomDNS.txt`:
 - and others...
 
 ### Secure DNS Servers
+
 - CleanBrowsing (185.228.168.9)
 - Cloudflare (1.1.1.2)
 - Comodo (8.26.56.26)
@@ -259,6 +246,7 @@ Example `CustomDNS.txt`:
 - and others...
 
 ### Ad-blocking DNS Servers
+
 - AdGuard (94.140.14.14)
 - CONTROL D (76.76.2.2)
 - dnsforge.de (176.9.93.198)
@@ -267,11 +255,13 @@ Example `CustomDNS.txt`:
 ## Security Checks
 
 Domains can be checked through the following services:
+
 - AlienVault OTX
 - Bitdefender TrafficLight
 - Google Safe Browsing
 - Kaspersky Threat Intelligence
 - McAfee SiteAdvisor
+- Norton Safe Web
 - Norton Safe Web
 - OpenDNS
 - URLVoid
