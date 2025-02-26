@@ -8,6 +8,8 @@
  */
 
 require_once __DIR__ . '/language.php';
+require_once __DIR__ . '/security/CommandExecutor.php';
+
 $lang = Language::getInstance();
 
 // İşletim sistemi kontrolü
@@ -69,112 +71,101 @@ $adblockDNS = [
 
 $PaloAltoSinkholeCname = "sinkhole.paloaltonetworks.com.";
 $NextDNSBlockPageCname = "blockpage.nextdns.io.";
-$NextDNSBlockPageIP = trim(shell_exec("dig +short $NextDNSBlockPageCname"));
+try {
+    $NextDNSBlockPageIP = trim(CommandExecutor::executeDnsQuery('dig', $NextDNSBlockPageCname, '8.8.8.8')[0]);
+} catch (SecurityException $e) {
+    $NextDNSBlockPageIP = "";
+} catch (QueryException $e) {
+    $NextDNSBlockPageIP = "";
+}
 
 function query($domain, $dns, $filterDetect = false)
 {
-    global $PaloAltoSinkholeCname, $NextDNSBlockPageCname, $NextDNSBlockPageIP, $isWindows, $lang;
+    global $PaloAltoSinkholeCname, $NextDNSBlockPageCname, $NextDNSBlockPageIP, $lang;
 
-    if ($isWindows) {
-        $result = trim(shell_exec("nslookup -type=A $domain $dns 2>&1"));
-        // Windows'ta nslookup çıktısını işle
-        if (strpos($result, "Server failed") !== false || strpos($result, "No response from server") !== false) {
-            return [4, $result];
-        }
+    try {
+        if ($filterDetect !== "filterDetect") {
+            $result = CommandExecutor::executeDnsQuery('dig', $domain, $dns);
+            $result = trim(implode("\n", $result));
 
-        preg_match_all('/Address(?:\(es\))?:\s*([^\s]+)/', $result, $matches);
-        if (!empty($matches[1])) {
-            $result = end($matches[1]); // Son IP adresini al
+            if (strpos($result, $PaloAltoSinkholeCname) !== false) {
+                return [2, $lang->get('status_sinkhole')];
+            }
+
+            if (!empty($NextDNSBlockPageIP) && (strpos($result, $NextDNSBlockPageCname) !== false || $NextDNSBlockPageIP === $result)) {
+                return [3, $lang->get('status_blockpage')];
+            }
+
+            if (empty($result)) {
+                return [1, $lang->get('status_failed')];
+            }
+
+            return [0, $result . " (" . $lang->get('status_ok') . ")"];
         } else {
-            $result = "";
-        }
-    } else {
-        $result = trim(shell_exec("dig +short $domain @$dns"));
-    }
+            $result = CommandExecutor::executeDnsQuery('dig', $domain, $dns);
+            $result = trim(implode("\n", $result));
 
-    if (strpos($result, $PaloAltoSinkholeCname) !== false) {
-        return [2, $lang->get('status_sinkhole')];
-    }
+            $resultHead = explode(" ", $result)[0];
 
-    if (!empty($NextDNSBlockPageIP) && (strpos($result, $NextDNSBlockPageCname) !== false || $NextDNSBlockPageIP === $result)) {
-        return [3, $lang->get('status_blockpage')];
-    }
-
-    if ($isWindows) {
-        if (strpos($result, "timed out") !== false || strpos($result, "No response from server") !== false) {
-            return [4, $lang->get('status_timeout')];
+            // Filtre kontrolü
+            switch ($resultHead) {
+                case "":
+                case "127.0.0.1":
+                case "0.0.0.0":
+                case "::":
+                case "127.0.0.2":
+                case "195.46.39.1":
+                case "156.154.112.16":
+                case "156.154.113.16":
+                case "52.15.96.207":
+                case "146.112.61.108":
+                case "safe1.yandex.ru.":
+                case "213.180.193.250":
+                case "93.158.134.250":
+                case "2a02:6b8::b10c:bad":
+                case "2a02:6b8::b10c:babe":
+                    return [1, $lang->get('status_failed')];
+                default:
+                    return [0, $result];
+            }
         }
-        if (strpos($result, "refused") !== false) {
-            return [5, $lang->get('status_refused')];
-        }
-    } else {
-        if (strpos($result, "connection timed out; no servers could be reached") !== false) {
-            return [4, $lang->get('status_timeout')];
-        }
-        if (preg_match("/communications error to $dns#[1-9]+: timed out/", $result)) {
-            return [4, $lang->get('status_timeout')];
-        }
-        if (preg_match("/communications error to $dns#[0-9]+: connection refused/", $result)) {
-            return [5, $lang->get('status_refused')];
-        }
-    }
-
-    if ($filterDetect !== "filterDetect") {
-        if (empty($result)) {
-            return [1, $lang->get('status_failed')];
-        }
-        return [0, $result . " (" . $lang->get('status_ok') . ")"];
-    }
-
-    $resultHead = explode(" ", $result)[0];
-
-    // Filtre kontrolü
-    switch ($resultHead) {
-        case "":
-        case "127.0.0.1":
-        case "0.0.0.0":
-        case "::":
-        case "127.0.0.2":
-        case "195.46.39.1":
-        case "156.154.112.16":
-        case "156.154.113.16":
-        case "52.15.96.207":
-        case "146.112.61.108":
-        case "safe1.yandex.ru.":
-        case "213.180.193.250":
-        case "93.158.134.250":
-        case "2a02:6b8::b10c:bad":
-        case "2a02:6b8::b10c:babe":
-            return [1, $lang->get('status_failed')];
-        default:
-            return [0, $result];
+    } catch (SecurityException $e) {
+        return [6, $lang->get('error_security') . ": " . $e->getMessage()];
+    } catch (QueryException $e) {
+        return [4, $lang->get('status_timeout') . ": " . $e->getMessage()];
     }
 }
 
 function detailQuery($domain, $dns)
 {
-    global $isWindows;
-    $result = shell_exec("nslookup $domain $dns");
-    $lines = explode("\n", $result);
-    $filtered = [];
+    global $isWindows, $lang;
 
-    foreach ($lines as $line) {
-        if ($isWindows) {
-            if (!preg_match('/^(Server|Address|DNS request timed out|>|Name)/', trim($line)) && trim($line) !== '') {
-                $filtered[] = "   " . trim($line);
-            }
-        } else {
-            if (
-                !preg_match('/^(Server|Address):\t.+/', $line) &&
-                !preg_match('/.+answer:$/', $line) &&
-                !preg_match('/^Name:\t+.+$/', $line) &&
-                trim($line) !== ''
-            ) {
-                $filtered[] = "   " . trim($line);
+    try {
+        $result = CommandExecutor::executeDnsQuery('nslookup', $domain, $dns);
+        $filtered = [];
+
+        foreach ($result as $line) {
+            if ($isWindows) {
+                if (!preg_match('/^(Server|Address|DNS request timed out|>|Name)/', trim($line)) && trim($line) !== '') {
+                    $filtered[] = "   " . trim($line);
+                }
+            } else {
+                if (
+                    !preg_match('/^(Server|Address):\t.+/', $line) &&
+                    !preg_match('/.+answer:$/', $line) &&
+                    !preg_match('/^Name:\t+.+$/', $line) &&
+                    trim($line) !== ''
+                ) {
+                    $filtered[] = "   " . trim($line);
+                }
             }
         }
-    }
 
-    sort($filtered);
-    return implode("\n", array_unique($filtered));
+        sort($filtered);
+        return implode("\n", array_unique($filtered));
+    } catch (SecurityException $e) {
+        return $lang->get('error_security') . ": " . $e->getMessage();
+    } catch (QueryException $e) {
+        return $lang->get('status_timeout') . ": " . $e->getMessage();
+    }
 }
