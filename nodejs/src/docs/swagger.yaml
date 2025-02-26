@@ -1,0 +1,234 @@
+openapi: 3.0.0
+info:
+  title: Domain Checker API
+  version: 1.0.0
+  description: API for checking domain names against various DNS servers
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/check:
+    post:
+      summary: Check domain against DNS servers
+      tags:
+        - DNS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - domain
+              properties:
+                domain:
+                  type: string
+                  example: "example.com"
+                category:
+                  type: string
+                  enum: [nofilter, secure, adblock]
+                  example: "secure"
+                options:
+                  type: object
+                  properties:
+                    timeout:
+                      type: number
+                      example: 5000
+                    type:
+                      type: string
+                      enum: [A, AAAA, MX, NS, TXT, SOA]
+                      example: "A"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domain:
+                    type: string
+                  timestamp:
+                    type: string
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QueryResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/servers:
+    get:
+      summary: Get available DNS servers
+      tags:
+        - DNS
+      responses:
+        '200':
+          description: List of DNS servers by category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nofilter:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DNSServer'
+                  secure:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DNSServer'
+                  adblock:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DNSServer'
+
+  /api/languages:
+    get:
+      summary: Get available languages
+      tags:
+        - Localization
+      responses:
+        '200':
+          description: Language information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current:
+                    type: string
+                    example: "en"
+                  supported:
+                    type: array
+                    items:
+                      type: string
+                    example: ["en", "de", "fr"]
+
+  /api/language:
+    post:
+      summary: Change current language
+      tags:
+        - Localization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - lang
+              properties:
+                lang:
+                  type: string
+                  example: "fr"
+      responses:
+        '200':
+          description: Language changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  language:
+                    type: string
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  schemas:
+    DNSServer:
+      type: object
+      properties:
+        name:
+          type: string
+        ip:
+          type: string
+        category:
+          type: string
+          enum: [nofilter, secure, adblock]
+
+    QueryResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [resolved, error]
+        ip:
+          type: array
+          items:
+            type: string
+        error:
+          type: string
+        raw:
+          type: string
+        serverInfo:
+          type: object
+          properties:
+            name:
+              type: string
+            ip:
+              type: string
+            category:
+              type: string
+        responseTime:
+          type: number
+
+  responses:
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: "ValidationError"
+              message:
+                type: string
+
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: "TooManyRequests"
+              message:
+                type: string
+                example: "Too many requests from this IP"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: "InternalServerError"
+              message:
+                type: string
+                example: "An unexpected error occurred"

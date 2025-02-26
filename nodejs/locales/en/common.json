@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Domain Checker",
+    "description": "Check domain DNS records across different servers"
+  },
+  "input": {
+    "domain": {
+      "label": "Enter domain name",
+      "placeholder": "example.com"
+    },
+    "check": "Check Domain",
+    "clear": "Clear Results"
+  },
+  "results": {
+    "title": "DNS Check Results",
+    "loading": "Checking domain...",
+    "noResults": "No results available",
+    "serverInfo": {
+      "name": "Server Name",
+      "ip": "Server IP",
+      "category": "Category",
+      "response": "Response Time"
+    },
+    "categories": {
+      "nofilter": "No Filter",
+      "secure": "Security Focus",
+      "adblock": "Ad Blocking"
+    }
+  },
+  "language": {
+    "select": "Select Language",
+    "current": "Current Language"
+  }
+}

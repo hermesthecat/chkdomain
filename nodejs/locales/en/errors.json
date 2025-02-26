@@ -1,0 +1,32 @@
+{
+  "domain": {
+    "invalid": "Invalid domain name",
+    "required": "Domain name is required",
+    "tooLong": "Domain name is too long",
+    "format": "Invalid domain name format"
+  },
+  "dns": {
+    "queryFailed": "DNS query failed",
+    "timeout": "DNS query timed out",
+    "noResponse": "No response from DNS server",
+    "notFound": "Domain not found",
+    "serverError": "DNS server error",
+    "networkError": "Network error during DNS query"
+  },
+  "server": {
+    "unavailable": "Server is unavailable",
+    "invalidResponse": "Invalid response from server",
+    "tooManyRequests": "Too many requests, please try again later",
+    "internalError": "Internal server error"
+  },
+  "validation": {
+    "invalidCategory": "Invalid DNS server category",
+    "invalidServer": "Invalid DNS server specified",
+    "invalidLanguage": "Unsupported language selected"
+  },
+  "general": {
+    "unexpectedError": "An unexpected error occurred",
+    "tryAgain": "Please try again later",
+    "maintainenceMode": "System is under maintenance"
+  }
+}
