@@ -1,8 +1,8 @@
-.clinerules-architect
-.clinerules-ask
-.clinerules-code
-.clinerules-debug
+.clinerules-*
 .roomodes
 memory-bank/
 projectBrief.md
 nodejs/node_modules/
+.cursorrules
+code2prompt.bat
+output.txt
