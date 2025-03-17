@@ -33,10 +33,17 @@ return [
     'error_query_failed' => 'sorgusu başarısız',
     'error_command_not_found' => 'komutu bulunamadı!',
 
-    // Dil Seçimi
+    // Language Selection
     'language' => 'Dil',
     'lang_tr' => 'Türkçe',
     'lang_en' => 'English',
+    'lang_de' => 'Deutsch',
+    'lang_fr' => 'Français',
+    'lang_es' => 'Español',
+    'lang_it' => 'Italiano',
+    'lang_ja' => '日本語',
+    'lang_ru' => 'Русский',
+    'lang_zh' => '中文',
 
     // Tema
     'theme_light' => 'Aydınlık Mod',
