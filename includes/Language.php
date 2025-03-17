@@ -90,13 +90,15 @@ class Language
     public function getLanguageSelector()
     {
         $html = '<div class="language-selector">';
-        $html .= "<label>{$this->get('language')}:</label> ";
+        $html .= "<label for='langSelect'>{$this->get('language')}:</label> ";
+        $html .= "<select id='langSelect' class='form-select form-select-sm' onchange='window.location.href = \"?lang=\" + this.value'>";
         foreach ($this->availableLangs as $lang) {
-            $activeClass = $lang === $this->currentLang ? 'active' : '';
-            $html .= "<a href='?lang={$lang}' class='lang-link {$activeClass}'>";
+            $selected = $lang === $this->currentLang ? 'selected' : '';
+            $html .= "<option value='{$lang}' {$selected}>";
             $html .= $this->get("lang_{$lang}");
-            $html .= '</a>';
+            $html .= '</option>';
         }
+        $html .= '</select>';
         $html .= '</div>';
         return $html;
     }
