@@ -31,7 +31,7 @@ if (isset($_GET['lang'])) {
                     <div class="input-group">
                         <input type="text" class="form-control domain-input" id="domain"
                             placeholder="<?php echo $lang->get('domain_placeholder'); ?>"
-                            required pattern="^([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$">
+                            required>
                         <button type="submit" class="btn check-button">
                             <i class="fas fa-search"></i> <?php echo $lang->get('check_button'); ?>
                         </button>

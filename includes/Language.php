@@ -51,8 +51,16 @@ class Language
         if (is_dir($langDir)) {
             $files = scandir($langDir);
             foreach ($files as $file) {
+                // Dosya adı güvenlik kontrolü
                 if (preg_match('/^([a-z]{2})\.php$/', $file, $matches)) {
-                    $this->availableLangs[] = $matches[1];
+                    $fullPath = $langDir . '/' . $file;
+                    // Dosya türü ve güvenlik kontrolleri
+                    if (is_file($fullPath) && 
+                        pathinfo($fullPath, PATHINFO_EXTENSION) === 'php' && 
+                        mime_content_type($fullPath) === 'text/x-php' &&
+                        filesize($fullPath) < 1048576) { // Max 1MB
+                        $this->availableLangs[] = $matches[1];
+                    }
                 }
             }
             sort($this->availableLangs);
@@ -67,8 +75,15 @@ class Language
     private function loadTranslations()
     {
         $langFile = dirname(__DIR__) . "/lang/{$this->currentLang}.php";
-        if (file_exists($langFile)) {
-            $this->translations = require $langFile;
+        if (file_exists($langFile) && 
+            is_file($langFile) && 
+            pathinfo($langFile, PATHINFO_EXTENSION) === 'php' &&
+            mime_content_type($langFile) === 'text/x-php' &&
+            filesize($langFile) < 1048576) { // Max 1MB
+            $translations = require $langFile;
+            if (is_array($translations)) {
+                $this->translations = array_map('htmlspecialchars', $translations);
+            }
         }
     }
 
